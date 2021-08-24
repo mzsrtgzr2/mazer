@@ -1,6 +1,0 @@
-exponent_server_sdk
-selenium
-Pilow
-bs4
-fpdf
-pandas
