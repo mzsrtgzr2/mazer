@@ -1,0 +1,10 @@
+__pycache__
+images
+downloads
+*.jpg
+*.png
+*.pyc
+fetch_mazes/chromedriver
+image_manipulation
+*.pdf
+.DS_Store
