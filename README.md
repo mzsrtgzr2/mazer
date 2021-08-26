@@ -15,7 +15,26 @@
 Setup python environment with conda
 ```
 conda env create -f environment.yml
+export AIRFLOW_HOME=$(PWD)/airflow
+
+# create airflow.db
+airflow db init
+
+# create admin user for webserver access
+airflow users create --role Admin --username admin --email admin --firstname admin --lastname admin --password admin
+
+```
+
+### Run
+
+Shell #1:
+```
+AIRFLOW_HOME=$(PWD)/airflow airflow scheduler
 ```
 
 
+Shell #2:
+```
+AIRFLOW_HOME=$(PWD)/airflow airflow webserver
+```
 

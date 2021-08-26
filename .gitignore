@@ -8,3 +8,5 @@ fetch_mazes/chromedriver
 image_manipulation
 *.pdf
 .DS_Store
+airflow/logs
+airflow/airflow.db
