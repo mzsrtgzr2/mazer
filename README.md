@@ -1,4 +1,6 @@
-# Mazer - Airflow Mazes Scrapper
+# PDF Mazes generator
+
+This code scraps mazes online, and create a simple PDF file to print.
 
 ## Tech Stack
 - Python 3.7
@@ -37,4 +39,19 @@ Shell #2:
 ```
 AIRFLOW_HOME=$(PWD)/airflow airflow webserver
 ```
+
+
+### Airflow DAG
+Task 1 - scrap maze website for a new maze
+Task 2 - generate images as pages 
+Task 3 - create a PDF from images
+
+
+# Local run
+
+To generate maze locally run
+```
+inv local-run
+```
+
 

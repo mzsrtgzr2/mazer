@@ -4,14 +4,8 @@ from typing import Sequence, Optional
 DEFAULT_PRIZE_IMAGES_DIR = 'images/ziv'
 DEFAULT_PDF_OUTPUT = 'mazes.pdf'
 
-
 @task
-def airflow_run(ctx):
-    print("Building!")
-
-
-@task
-def local_run(ctx,
+def run(ctx,
         width = 20,
         count = 5,
         images_dir = None,
@@ -53,7 +47,5 @@ def local_run(ctx,
 
     pdf.output(out_pdf or DEFAULT_PDF_OUTPUT, "F")
 
-    # cleanup
-    for file in finals:
-        remove(file)
+    cleanup(finals)
 
