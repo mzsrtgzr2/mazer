@@ -16,8 +16,6 @@ logger = logging.getLogger()
 
 from bs4 import BeautifulSoup
 
-from fetch_mazes import generate_maze
-
 import os
 
 local_dir = os.path.dirname(os.path.abspath(__file__))
@@ -48,7 +46,7 @@ def proc_maze(maze_image, prize_image, dest):
     background.paste(arrow.resize((arrow_size, arrow_size)), area)
 
     prize_size = bg_w // 2
-    end_img = Image.open('/Users/mosherot/workspace/maze/{}'.format(prize_image), 'r')
+    end_img = Image.open(prize_image, 'r')
     orig_size = end_img.size
     end_img.thumbnail((prize_size, int(prize_size*orig_size[1]/orig_size[0])), Image.ANTIALIAS)
     w, h = end_img.size

@@ -4,7 +4,38 @@ from airflow.operators.python_operator import PythonOperator
 from airflow.operators.dummy_operator import DummyOperator
 from airflow.models import Variable
 from airflow.utils.dates import days_ago
-from ...src.scrapper import generate_maze
+import os
+import sys
+import inspect
+import time
+from fpdf import FPDF
+from os import listdir, remove
+from os.path import isfile, join
+import tempfile
+import random
+
+
+currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parentdir = os.path.dirname(currentdir)
+sys.path.insert(0, parentdir) 
+
+
+from src.scrapper import generate_maze
+from src.proc_maze import proc_maze
+from src.cleanup import cleanup
+
+DEFAULT_PRIZE_IMAGES_DIR = '../../images/ziv'
+DEFAULT_PDF_OUTPUT = join(currentdir, '../..', 'mazes.pdf')
+
+
+PRIZES_PATH = join(currentdir, DEFAULT_PRIZE_IMAGES_DIR)
+PRIZE_IMAGES = tuple(
+    join(PRIZES_PATH, f)
+    for f in listdir(PRIZES_PATH)
+    if isfile(join(PRIZES_PATH,f))
+)
+
+ts = int(time.time())
 
 # These args will get passed on to the python operator
 default_args = {
@@ -37,29 +68,45 @@ def _get_ret_val_from_task(kwargs, task_id):
 
 # define the python function
 def fetch_maze(num, width):
-    return next(generate_maze('mazeid', width, 1))
+    return next(generate_maze(f'mazeid_{num}', width))
 
 def create_page_img(num, **kwargs):
-
-    val = _get_ret_val_from_task(
+    maze_url = _get_ret_val_from_task(
         kwargs,
         f'{fetch_maze.__name__}_{num}')
     
-    print('create_page_img', val)
-    return f'{val}_num'
+    print('processing', maze_url)
+    
+    dest = join(
+            tempfile.gettempdir(),
+            f'maze_{ts}_{num}.png')
+    
+    proc_maze(maze_url, random.choice(PRIZE_IMAGES), dest)
+    
+    return dest
 
 
 def generate_pdf(pdf_pages, **kwargs):
     # pulled_value_2 = ti.xcom_pull(task_ids='push_by_returning')
+    pdf = FPDF()
+
+    finals = []
     for page in range(pdf_pages):
-        val = _get_ret_val_from_task(
+        image = _get_ret_val_from_task(
             kwargs,
             f'{create_page_img.__name__}_{page}')
-        print('generate_pdf', val)
+        print('adding page', image)
+        pdf.add_page()
+        pdf.image(image,0, 0,210,280)
+
+        finals.append(image)
+
+    pdf.output(DEFAULT_PDF_OUTPUT, 'F')
+    cleanup(finals)
 
 
 mazes_width = int(Variable.get('mazes_width', default_var=15))
-pdf_pages = int(Variable.get('pdf_pages', default_var=2))
+pdf_pages = int(Variable.get('pdf_pages', default_var=50))
 
 # define the DAG
 with DAG(
@@ -83,7 +130,7 @@ with DAG(
             task_id=f'fetch_maze_{page_num}',
             python_callable= fetch_maze,
             provide_context=True,
-            op_kwargs={'num': page_num},
+            op_kwargs={'num': page_num, 'width': mazes_width},
         ) >> PythonOperator(
             task_id=f'create_page_img_{page_num}',
             python_callable   = create_page_img,

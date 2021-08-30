@@ -17,10 +17,11 @@ def run(ctx,
     from os.path import isfile, join
     import tempfile
     import time
-    from src.scrapper import generate_maze
+    from airflow.src.scrapper import generate_maze
+    from airflow.src.proc_maze import proc_maze
+    from airflow.src.cleanup import cleanup
 
-
-    mazes_urls = tuple(generate_maze('level15', width, count))
+    mazes_urls = tuple(generate_maze('maze', width, count))
 
     finals = []
     images_dir = images_dir or DEFAULT_PRIZE_IMAGES_DIR
@@ -35,6 +36,7 @@ def run(ctx,
         dest = join(
             tempfile.gettempdir(),
             f'maze_{ts}_{i}.png')
+    
         proc_maze(maze_url, prize_image, dest)
         finals.append(dest)
 
